@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Conceptos: planes de ejecución e índices</title>
+<style>
+:root{--bg:#eef1f6;--card:#fff;--ink:#1b2433;--mut:#5b6577;--line:#c9d1df;--acc:#1f4fbf;--ok:#1f8a5b;--warn:#fff4d6;--warnb:#e0a100;--code:#f1f3f8;--tag:#e3ebfb;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#111723;--card:#1a2234;--ink:#e8edf6;--mut:#a3aec4;--line:#33405a;--acc:#7da4ff;--ok:#4cc38a;--warn:#3a3118;--warnb:#d8a31a;--code:#0f1522;--tag:#25324f;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#111723;--card:#1a2234;--ink:#e8edf6;--mut:#a3aec4;--line:#33405a;--acc:#7da4ff;--ok:#4cc38a;--warn:#3a3118;--warnb:#d8a31a;--code:#0f1522;--tag:#25324f;color-scheme:dark}
+*{box-sizing:border-box}html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 Verdana,Geneva,sans-serif}
+header{position:sticky;top:env(safe-area-inset-top,0px);background:var(--card);border-bottom:2px solid var(--line);padding:10px 14px;z-index:3}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--card);z-index:4}
+h1{margin:0 0 6px;font-size:1.05rem}
+.bar{display:flex;gap:8px;align-items:center}
+#q{flex:1;min-width:0;font:inherit;padding:8px 10px;border:2px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink)}
+#cnt{font-size:.85rem;color:var(--mut);white-space:nowrap}
+main{max-width:720px;margin:0 auto;padding:14px 14px 40px}
+.intro{color:var(--mut);font-size:.9rem;margin:0 0 12px}
+.c{background:var(--card);border:2px solid var(--line);border-radius:10px;padding:14px 16px;margin-bottom:14px}
+.c.hecho{border-color:var(--ok)}.c.dest{border-color:var(--acc);box-shadow:0 0 0 5px var(--tag)}.back{display:inline-block;margin-bottom:6px;font-size:.85rem;color:var(--acc)}
+.top{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}
+h2{margin:0;font-size:1.1rem;color:var(--acc)}
+.n{font-size:.75rem;background:var(--tag);color:var(--acc);padding:1px 8px;border-radius:10px;font-weight:bold;white-space:nowrap}
+.r{margin:10px 0 0}
+.r b{display:block;font-size:.75rem;text-transform:uppercase;letter-spacing:.04em;color:var(--mut);margin-bottom:2px}
+.o{background:var(--warn);border-left:5px solid var(--warnb);padding:8px 10px;border-radius:6px}
+code{background:var(--code);padding:1px 5px;border-radius:4px;font:.88em ui-monospace,Consolas,monospace}
+pre{background:var(--code);padding:9px 11px;border-radius:6px;overflow-x:auto;margin:4px 0 0;font:.85rem/1.45 ui-monospace,Consolas,monospace}
+button.v{margin-top:12px;font:inherit;font-size:.85rem;padding:6px 12px;border:2px solid var(--line);border-radius:8px;background:transparent;color:var(--ink);cursor:pointer}
+.hecho button.v{background:var(--ok);border-color:var(--ok);color:#fff}
+button:focus-visible,#q:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
+</style>
+</head>
+<body>
+<header><a class="back" href="../index.html">← Inicio</a><h1>Conceptos a dominar: planes de ejecución e índices</h1>
+<div class="bar"><input id="q" type="search" placeholder="Buscar concepto…" aria-label="Buscar concepto"><span id="cnt"></span></div></header>
+<main>
+<p class="intro">Van en orden de aprendizaje: cada uno se apoya en los anteriores. Marca «Ya lo domino» cuando puedas explicarlo con tus palabras sin mirar.</p>
+<div id="lista"></div>
+</main>
+<script>
+const C=[
+["Plan de ejecución","La «receta» que elige SQL Server para traer los datos: un árbol de operadores (leer, filtrar, unir, ordenar).","Tú escribes qué quieres; el optimizador decide cómo. Por eso el código SQL no te dice qué operador saldrá: solo el plan lo confirma.","<code>WHERE socio_id = 308</code> puede ser un Scan o un Seek según los índices que existan.","Se lee de derecha a izquierda: los datos nacen en las tablas y fluyen hasta el SELECT."],
+["Plan estimado vs real","El estimado se genera sin ejecutar; el real incluye lo que pasó de verdad (filas reales, ejecuciones).","La guía pide el plan real: lo que importa es lo ocurrido, no lo esperado.","Activar con <code>Ctrl + M</code> y ejecutar. En tu captura: estimadas 52.09 filas, reales 1.","Estimadas ≠ reales es una pista de que las estadísticas o los parámetros engañan al optimizador."],
+["Página de 8 KB","Unidad mínima que SQL Server lee del disco o la memoria; guarda varias filas.","Aunque pidas 1 fila se lee la página entera, así que el trabajo se mide en páginas, no en filas.","Tu consulta con compuesto leyó 4 páginas (logical reads 4).","Menos páginas leídas = consulta más barata."],
+["Heap","Tabla sin índice clustered: filas sin orden.","No hay atajos: para buscar algo hay que recorrer todo (Table Scan).","En tu plan de ventas, <code>Ventas</code> salió con Table Scan porque es un heap.","Si tiene clustered, el recorrido completo se llama Clustered Index Scan."],
+["Índice clustered (agrupado)","Es la tabla misma, ordenada por su clave; las hojas son las filas completas.","Solo puede haber uno por tabla. Ideal para PK y rangos. Leerlo entero equivale a leer toda la tabla.","<code>ID INT PRIMARY KEY</code> crea un clustered por defecto.","Analogía: el diccionario, donde el libro entero ES el índice."],
+["Índice nonclustered (no agrupado)","Estructura aparte con la clave ordenada, un puntero a la fila y, si quieres, columnas INCLUDE.","Permite buscar por columnas distintas a la clave del clustered. Puede haber varios.","<pre>CREATE NONCLUSTERED INDEX IX_SocioID\nON Prestamo (socio_id);</pre>","Analogía: el glosario al final del libro: te da la página, pero el contenido está en otra parte."],
+["Árbol B (B-tree)","Forma en que se organiza un índice: raíz, niveles intermedios y hojas.","Bajar por el árbol toma pocos saltos incluso con millones de filas; por eso el Seek es rápido.","Buscar <code>(308, 'Activo')</code>: se baja desde la raíz hasta la hoja exacta y se lee hacia adelante mientras coincida.","Las hojas están ordenadas y enlazadas: en un rango se encuentra la primera y se sigue."],
+["Scan (Table / Clustered Index / Index Scan)","Lectura de toda o gran parte de una tabla o índice.","Es lo que ocurre cuando no hay un índice útil para el filtro.","Tu Actividad 1 sin índice: lee todas las filas de <code>Prestamo</code> para devolver 104.","No todo Scan es malo: es razonable si el filtro devuelve gran parte de la tabla o la tabla es pequeña."],
+["Index Seek","Búsqueda dirigida: baja por el árbol B hasta un valor o rango y lee solo esa porción.","Es el acceso eficiente cuando el filtro es selectivo y el índice lo permite.","Con <code>(socio_id, estado)</code> el seek llegó directo y leyó 1 fila.","No todo Seek es óptimo: puede leer muchas filas y descartar casi todas."],
+["Seek Predicate vs Predicate","Seek Predicate: condición resuelta usando el orden del índice. Predicate: condición revisada fila por fila después de leer.","Marca la diferencia entre saltar a las filas y leerlas todas para filtrar.","Índice solo en <code>socio_id</code>: <code>estado</code> aparece como Predicate (104 filas leídas). Con el compuesto: ambos en Seek Predicates.","Se ve en el tooltip del operador, en «Buscar predicados» y «Predicado»."],
+["Filas leídas vs devueltas","Number of Rows Read = lo que el operador examinó. Actual Number of Rows = lo que entregó.","Su relación mide la eficiencia del acceso: leer 104 para devolver 1 es trabajo desperdiciado.","Mismo operador (Index Seek), dos resultados: 104 leídas contra 1 leída.","El nombre del operador no basta: mira siempre estas dos cifras."],
+["Key Lookup (y RID Lookup)","El índice encuentra la fila pero le faltan columnas; SQL Server va a la tabla base a buscarlas, fila por fila.","Cada lookup es una búsqueda extra: con muchas filas puede ser el operador más caro del plan.","<code>SELECT *</code> con índice solo en <code>socio_id</code>: un Seek más un Key Lookup por cada fila encontrada.","Si la tabla es heap se llama RID Lookup. Con pocas filas es casi inofensivo."],
+["Índice cubriente e INCLUDE","Un índice es cubriente cuando contiene todas las columnas que la consulta pide. INCLUDE las guarda solo en las hojas.","Elimina el Key Lookup sin volver clave a todas las columnas.","<pre>CREATE NONCLUSTERED INDEX IX_Socio\nON Prestamo (socio_id)\nINCLUDE (fecha_prestamo, estado);</pre>","Riesgo de abusar: índice más grande, más páginas por leer y DML más lento."],
+["Columna clave vs INCLUDE","Clave: define el orden y sirve para buscar, filtrar y ordenar. INCLUDE: solo se devuelve, no filtra ni ordena.","Regla de oro: lo que está en WHERE, JOIN, ORDER BY o GROUP BY es clave; lo que solo está en el SELECT va en INCLUDE.","<pre>WHERE Country = 'Spain'   -- clave\nSELECT Name, Email        -- INCLUDE</pre>","Error común: poner todo como clave; también cubre, pero engorda el árbol."],
+["Selectividad","Qué fracción de la tabla devuelve un filtro: pocas filas = muy selectivo.","Decide si un índice vale la pena. Email o documento: excelente. Sexo o estado: casi inútil por sí solo.","<code>socio_id = 308</code> devuelve 104 filas; <code>estado = 'Activo'</code> puede devolver miles.","Alta densidad de valores repetidos = baja selectividad."],
+["Punto de quiebre (tipping point)","Cantidad de filas a partir de la cual el optimizador prefiere un Scan aunque el índice exista.","Explica por qué «tener un índice» no garantiza un Seek (Actividad 3).","Índice solo en <code>estado</code>, no cubriente, con muchas filas 'Activo': cada una exigiría un Key Lookup, y el Scan sale más barato.","No es un porcentaje fijo: con índice cubriente el índice sigue siendo atractivo con más filas."],
+["Índice compuesto","Índice con varias columnas clave, ordenado por la primera y, dentro de ella, por la segunda.","Resuelve todas las condiciones dentro del mismo Seek.","<pre>CREATE NONCLUSTERED INDEX IX_Socio_Estado\nON Prestamo (socio_id, estado);</pre>","Analogía: guía telefónica ordenada por apellido y luego nombre."],
+["Columna líder y prefijo izquierdo","La columna líder es la primera de la clave. SQL Server solo hace Seek con un prefijo izquierdo.","Por eso (A, B) sirve para A o para A+B, pero no para B sola.","<code>(socio_id, estado)</code>: filtrar solo por <code>estado</code> no puede hacer Seek eficiente.","(A, B) y (B, A) no son equivalentes: atienden consultas distintas."],
+["Orden de columnas en la clave","Criterios: uso real en las consultas; igualdad antes que rango; entre igualdades, la más selectiva primero.","Un buen orden permite Seek en más consultas.","<code>WHERE socio_id = 308 AND fecha &gt; X</code> → <code>(socio_id, fecha)</code>.","Una columna poco selectiva sí sirve en un compuesto si va después de una selectiva: refina dentro del Seek."],
+["Índices que ya existen: PK, UNIQUE y FK","PK crea un clustered único; UNIQUE crea un nonclustered único; la FOREIGN KEY NO crea índice.","Antes de proponer un índice, revisa qué ya existe. La columna FK suele ser candidata para el JOIN.","<pre>EXEC sp_helpindex 'Prestamo';</pre>","Es una de las preguntas de la Actividad 6."],
+["Sargabilidad y rangos de fechas","Una condición es sargable si permite usar el índice para un Seek.","Una función sobre la columna lo impide. Los rangos con límite inferior inclusivo y superior exclusivo son seguros.","<pre>WHERE fecha_prestamo >= '2026-01-01'\n  AND fecha_prestamo <  '2026-02-01'</pre>","Evita <code>YEAR(fecha) = 2026</code>. El mismo índice sirve en un rango pequeño y se ignora en uno enorme."],
+["Join lógico vs algoritmo físico","El join lógico (INNER, LEFT…) dice qué filas se combinan. El físico (Nested Loops, Hash, Merge) dice cómo.","Se leen juntos en el plan: <code>Hash Match (Inner Join)</code>.","Hay un join menos que tablas: 4 tablas = 3 joins.","El optimizador elige el algoritmo según tamaños, índices y orden de los datos."],
+["Nested Loops","Por cada fila de la entrada externa busca sus coincidencias en la interna, normalmente con un Seek.","Excelente con pocas filas externas y un índice en la columna de unión.","Tu plan de ventas: un Seek en <code>Productos</code> por cada venta.","Si la externa es grande, la búsqueda interna se repite muchísimo (mira Number of Executions)."],
+["Hash Match","Construye una tabla hash en memoria con una entrada y sondea con la otra.","Sirve con entradas grandes, sin orden ni índice útil, solo por igualdad.","Tu plan <code>country</code> + <code>address</code>: dos Scans unidos por Hash Match.","Usa memoria y puede derramar a disco. Caro a menudo = falta un índice en la columna de unión."],
+["Merge Join","Recorre dos entradas ya ordenadas por la clave de unión, como una cremallera.","Muy eficiente si el orden ya existe en ambos lados.","Aparece cuando ambos lados salen de índices ordenados por la clave de unión.","Si hay que ordenar primero, el Sort puede quitarle la ventaja."],
+["Lecturas lógicas (STATISTICS IO)","Número de páginas leídas desde memoria; sale en la pestaña Mensajes, una línea por tabla.","Es la métrica principal para comparar antes y después: no cambia entre ejecuciones.","<pre>SET STATISTICS IO ON;\n-- Table 'Prestamo'. logical reads 4</pre>","En joins, te dice en qué tabla se concentra el trabajo."],
+["Por qué no basta el % de costo ni el tiempo","El % de costo es una estimación relativa; el tiempo es ruidoso (0 ms en tablas pequeñas).","La guía exige justificar con plan, filas procesadas y lecturas lógicas.","Tu captura mostró <code>elapsed time = 0 ms</code>, pero <code>logical reads 4</code> sí es comparable.","Un índice no se califica bien solo porque baje el costo gráfico."],
+["Costo de mantener índices","Cada INSERT, UPDATE y DELETE debe actualizar todos los índices afectados; además ocupan espacio.","Por eso no se indexa cada columna del WHERE o del JOIN.","Con 5 índices nonclustered, un INSERT escribe la fila más 5 entradas de índice.","Indexa con propósito: consultas frecuentes o costosas que lo justifiquen."],
+["Índices redundantes y no usados","Redundante: cubre lo mismo que otro. No usado: casi sin seeks/scans pero con muchos updates.","Se eliminan para liberar espacio y mejorar el DML.","<pre>SELECT i.name, s.user_seeks, s.user_scans,\n  s.user_lookups, s.user_updates\nFROM sys.dm_db_index_usage_stats s\nJOIN sys.indexes i ON i.object_id=s.object_id\n AND i.index_id=s.index_id;</pre>","Si ya existe <code>(Apellido, Nombre)</code>, uno solo en <code>(Apellido)</code> sobra."],
+["Fragmentación","Desorden que sufren los índices por muchos INSERT, UPDATE y DELETE.","Obliga al mantenimiento: menos de 30 % REORGANIZE, más de 30 % REBUILD.","<pre>ALTER INDEX IX_Nombre ON Tabla REORGANIZE;\nALTER INDEX IX_Nombre ON Tabla REBUILD;</pre>","Se mide con <code>sys.dm_db_index_physical_stats</code> (avg_fragmentation_in_percent)."],
+["Estadísticas y SELECT *","Las estadísticas resumen cómo se distribuyen los valores; el optimizador estima con ellas. SELECT * pide todo.","Estadísticas viejas llevan a malos planes; SELECT * rompe los índices cubrientes y fuerza Key Lookups.","<pre>UPDATE STATISTICS dbo.Customers;</pre>","Pide solo las columnas que necesitas."],
+["Documentar y verificar cada índice","Anota nombre, tipo, columnas, fecha y motivo; después de crearlo, vuelve a medir.","La guía pide explicar qué problema resuelve y reportar aunque no mejore.","<code>sys.dm_db_missing_index_details</code> sugiere índices, pero valida con el plan y las lecturas.","Un índice sin evidencia que lo respalde resta en la calificación."]
+];
+const slug=n=>n.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,""),hl=decodeURIComponent(location.hash.slice(1));
+const L=document.getElementById("lista"),Q=document.getElementById("q"),N=document.getElementById("cnt"),done=new Set();
+function row(t,v,cl){return v?'<p class="r '+(cl||"")+'"><b>'+t+"</b>"+v+"</p>":""}
+function draw(){const f=Q.value.trim().toLowerCase();L.innerHTML="";let s=0;
+C.forEach((c,i)=>{const txt=c.join(" ").toLowerCase();if(f&&!txt.includes(f))return;s++;
+const d=document.createElement("article");d.id=slug(c[0]);d.className="c"+(done.has(i)?" hecho":"")+(slug(c[0])==hl?" dest":"");
+d.innerHTML='<div class="top"><h2>'+c[0]+'</h2><span class="n">'+(i+1)+"/"+C.length+"</span></div>"+row("Qué es",c[1])+row("Por qué importa",c[2])+row("Ejemplo",c[3])+row("Ojo",c[4],"o")+'<button class="v" aria-pressed="'+done.has(i)+'">'+(done.has(i)?"✓ Ya lo domino":"Ya lo domino")+"</button>";
+d.querySelector("button").onclick=()=>{done.has(i)?done.delete(i):done.add(i);draw()};L.appendChild(d)});
+N.textContent=done.size+" de "+C.length+" dominados"+(f?" · "+s+" resultados":"")}
+Q.oninput=draw;draw();if(hl){const e=document.getElementById(hl);if(e)e.scrollIntoView({block:"center"})}
+</script>
+</body>
+</html>
