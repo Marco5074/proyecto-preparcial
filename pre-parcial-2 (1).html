@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Pre-parcial 2 por casos: índices, planes y seguridad</title>
+<style>
+:root{--bg:#eef1f6;--card:#fff;--ink:#1b2433;--mut:#5b6577;--line:#c9d1df;--acc:#1f4fbf;--ok:#1f8a5b;--okb:#dff3e9;--mal:#c8433b;--malb:#f9e0de;--amb:#e0a100;--code:#f1f3f8}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#111723;--card:#1a2234;--ink:#e8edf6;--mut:#a3aec4;--line:#33405a;--acc:#7da4ff;--ok:#4cc38a;--okb:#16372a;--mal:#ef7a72;--malb:#40201e;--amb:#d8a31a;--code:#0f1522;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#111723;--card:#1a2234;--ink:#e8edf6;--mut:#a3aec4;--line:#33405a;--acc:#7da4ff;--ok:#4cc38a;--okb:#16372a;--mal:#ef7a72;--malb:#40201e;--amb:#d8a31a;--code:#0f1522;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:18px/1.6 Verdana,Geneva,sans-serif}
+main{max-width:740px;margin:0 auto;padding:14px}
+h1{font-size:1.1rem;margin:0 0 4px}.sub{color:var(--mut);font-size:.95rem;margin:0 0 10px}
+#chips{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:12px}
+#chips button{font:inherit;font-size:.95rem;min-width:42px;padding:5px 8px;border:2px solid var(--line);border-radius:6px;background:var(--card);color:var(--ink);cursor:pointer}
+#chips .ok{background:var(--ok);border-color:var(--ok);color:#fff}#chips .mal{background:var(--mal);border-color:var(--mal);color:#fff}#chips .part{background:var(--amb);border-color:var(--amb);color:#000}#chips .cur{outline:3px solid var(--acc);outline-offset:1px}
+.card{background:var(--card);border:2px solid var(--line);border-radius:10px;padding:16px}
+.tag{font-size:.9rem;font-weight:bold;color:var(--acc)}
+.q{font-weight:bold;margin:6px 0 12px}.q pre{font-weight:normal}
+.opt{display:block;width:100%;text-align:left;font:inherit;padding:10px 12px;margin-bottom:8px;border:2px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink);cursor:pointer}
+.opt.sel{border-color:var(--acc)}.opt.ok{background:var(--okb);border-color:var(--ok);font-weight:bold}.opt.mal{background:var(--malb);border-color:var(--mal)}
+textarea{width:100%;min-height:140px;font:inherit;padding:10px;border:2px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink)}
+.fb{margin-top:12px;padding:10px 12px;border-radius:8px;border-left:6px solid var(--acc);background:var(--code)}
+.fb.ok{border-color:var(--ok);background:var(--okb)}.fb.mal{border-color:var(--mal);background:var(--malb)}
+.k{display:block;margin:6px 0}.k input{margin-right:8px}
+.row{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+.btn{font:inherit;padding:9px 14px;border:2px solid var(--ink);border-radius:8px;background:var(--ink);color:var(--card);cursor:pointer}
+.btn.sec{background:transparent;color:var(--ink);border-color:var(--line)}.btn:disabled{opacity:.4;cursor:default}
+button:focus-visible,textarea:focus-visible,input:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
+a{color:var(--acc);font-weight:bold}code{background:var(--code);padding:1px 5px;border-radius:4px;font:.88em ui-monospace,Consolas,monospace}
+pre{background:var(--code);padding:9px 11px;border-radius:6px;overflow-x:auto;margin:6px 0 0;font:.92rem/1.5 ui-monospace,Consolas,monospace}
+.bar{height:12px;background:var(--line);border-radius:6px;overflow:hidden;margin:3px 0 4px}.bar div{height:100%}
+.t{margin:12px 0 0}.t small{color:var(--mut);display:block}
+.meta{position:relative;display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-top:6px;font-size:.9rem;flex-wrap:wrap}
+.help{cursor:help;color:var(--acc);font-weight:bold;border-bottom:2px dotted var(--acc);outline:none}
+.pop{display:none;position:absolute;left:0;right:0;top:100%;z-index:5;padding:10px 12px;background:var(--card);color:var(--ink);border:2px solid var(--acc);border-radius:8px;box-shadow:0 6px 18px rgba(0,0,0,.25);font-weight:normal;cursor:auto;border-bottom:2px solid var(--acc)}
+.help:hover .pop,.help:focus .pop,.help:focus-within .pop,.help.open .pop{display:block}
+#chips .lock{opacity:.4;cursor:not-allowed}#chips .esc{border-color:var(--acc);border-width:3px}
+</style>
+</head>
+<body>
+<main>
+<p class="sub"><a href="inicio.html">← Inicio</a> · <a href="pre-parcial.html">Pre-parcial 1</a></p>
+<h1>Pre-parcial 2 por casos</h1>
+<p class="sub">40 preguntas: 30 de selección múltiple (20 de teoría y 10 casos) y 10 escritas de análisis. Al final obtienes un diagnóstico de tus puntos débiles por tema. Como en el examen, no puedes avanzar sin responder: las escritas piden mínimo 200 caracteres.</p>
+<div id="chips"></div>
+<p class="sub" id="gd"></p>
+<div id="v"></div>
+<div class="row" id="exp"><button class="btn sec" id="bj">Descargar mis respuestas escritas (.json)</button><button class="btn sec" id="bc">Copiar para pegarlo en el chat</button></div>
+<p class="sub" id="cm">Exporta tus 10 respuestas escritas para que te las corrijan.</p>
+<textarea id="cp" hidden readonly></textarea>
+</main>
+<script>
+const T={P:"Leer planes de ejecución",S:"Selectividad y punto de quiebre",C:"Índices compuestos y orden",I:"INCLUDE y cubrientes",J:"Joins",M:"Mantenimiento y buenas prácticas",X:"Seguridad"};
+const R={P:"Compara siempre filas leídas vs devueltas, Seek Predicate vs Predicate y lecturas lógicas; el nombre del operador no basta.",S:"Repasa selectividad y punto de quiebre: un índice no garantiza un Seek, depende de cuántas filas devuelve el filtro y de si cubre.",C:"Repasa columna líder, prefijo izquierdo, igualdad antes que rango y qué consultas atiende (A,B) frente a (B,A).",I:"Repasa clave vs INCLUDE y los riesgos de incluir demasiado (tamaño, DML).",J:"Repasa Nested Loops, Hash Match y Merge Join, y cómo separar un problema del filtro de uno del join.",M:"Repasa fragmentación (30 %), índices no usados, redundantes y el costo en INSERT/UPDATE/DELETE.",X:"Repasa DENY vs REVOKE vs GRANT, roles, login vs usuario y bases contenidas."};
+const M=[
+["P","¿En qué sentido se lee el flujo de datos de un plan de ejecución gráfico?",["De derecha a izquierda: los datos nacen en las tablas y fluyen hasta el SELECT","De izquierda a derecha, empezando por el SELECT","De arriba abajo, sin importar la posición","Según el color de cada operador"],0,"Los operadores que leen las tablas están a la derecha y entregan sus filas hacia la izquierda, donde está el SELECT.",1],
+["P","Un plan de ejecución <b>real</b> se diferencia del estimado en que:",["Se genera sin ejecutar la consulta","Siempre muestra un costo menor","No muestra operadores de unión","Incluye las filas reales y el número de ejecuciones de cada operador"],3,"El plan real se obtiene al ejecutar; por eso trae lo que de verdad ocurrió, no solo lo esperado.",1],
+["P","En un Index Seek: Number of Rows Read = 50 000 y Actual Number of Rows = 3. Esto indica:",["Un acceso muy eficiente, porque es un Seek","Que falta una PRIMARY KEY","Que el índice no resuelve bien todos los filtros: lee mucho y descarta casi todo","Que hay un Hash Match"],2,"El nombre del operador no basta: leer 50 000 filas para devolver 3 es trabajo desperdiciado.",1],
+["P","La unidad mínima que SQL Server lee del disco o de la memoria es:",["La fila","La página de 8 KB","La columna","El índice completo"],1,"Aunque pidas una fila se lee la página entera, por eso el trabajo se mide en páginas (lecturas lógicas).",1],
+["P","Una tabla <b>heap</b> (sin índice clustered) tiene un índice nonclustered que no cubre la consulta. Para buscar las columnas faltantes se usa un:",["Hash Lookup","RID Lookup","Heap Seek","Row Scan"],1,"En una tabla sin clustered el puntero es un RID; con clustered se llama Key Lookup.",1],
+["S","¿Qué columna es la candidata MÁS selectiva para un índice?",["Número de documento único","Sexo (2 valores)","Estado civil (4 valores)","Activo (sí/no)"],0,"Un valor único devuelve una sola fila: máxima selectividad.",1],
+["S","El punto de quiebre (tipping point) es:",["El máximo de índices permitidos en una tabla","El momento en que se reconstruye un índice","El límite de 8 KB por página","La cantidad de filas a partir de la cual el optimizador prefiere un Scan aunque exista el índice"],3,"Explica por qué tener un índice no garantiza un Seek. No es un porcentaje fijo.",1],
+["C","Dado un índice (A, B, C), ¿qué filtro puede usar un Seek con el prefijo izquierdo?",["WHERE C = 1","WHERE B = 1 AND C = 1","WHERE A = 1 AND B = 1","WHERE B = 1"],2,"Solo se puede saltar por un prefijo que empiece en la columna líder: A, A+B o A+B+C.",1],
+["C","Los índices (A, B) y (B, A):",["Son equivalentes","(B, A) siempre es mejor","Atienden consultas distintas","SQL Server los unifica solo"],2,"El orden de las columnas define por cuál se puede saltar directo.",1],
+["I","Un índice es <b>cubriente</b> cuando:",["Es clustered","Contiene todas las columnas que la consulta necesita, sin ir a la tabla base","Tiene más de tres columnas","Es UNIQUE"],1,"Así no hay Key Lookup: toda la consulta se resuelve dentro del índice.",1],
+["I","Una columna que solo aparece en el SELECT (nunca en WHERE, JOIN u ORDER BY) debe ir:",["En INCLUDE","En la clave, como primera columna","En un índice clustered aparte","En ningún lado: el índice no puede cubrir"],0,"Solo se devuelve: INCLUDE. Lo que filtra, une u ordena es clave.",1],
+["I","Una columna que aparece en <code>ORDER BY</code> ¿va en la clave o en INCLUDE?",["En INCLUDE","Da igual","En ninguna","En la clave, porque INCLUDE no ordena"],3,"Las columnas INCLUDE no definen el orden del índice, así que no evitan el Sort.",1],
+["J","Un Merge Join es especialmente eficiente cuando:",["No hay condición de igualdad","Hay poca memoria","Las tablas son heaps","Las dos entradas ya vienen ordenadas por la clave de unión"],3,"Recorre ambas entradas como una cremallera; si hay que ordenar primero, pierde la ventaja.",1],
+["J","Una consulta une 5 tablas con INNER JOIN. ¿Cuántos operadores de join debe mostrar el plan?",["5","6","4","Depende del filtro"],2,"Siempre hay un join menos que tablas.",1],
+["J","El join lógico (INNER JOIN) y el algoritmo físico (Hash Match) se diferencian en que:",["Son lo mismo","El lógico define qué filas se combinan; el físico, cómo se calcula","El físico define el resultado final","El lógico elige el algoritmo"],1,"Se leen juntos en el plan: <code>Hash Match (Inner Join)</code>.",1],
+["M","Cada INSERT, UPDATE o DELETE obliga a SQL Server a:",["Actualizar todos los índices afectados","Ignorar los índices nonclustered","Recrear las estadísticas","Vaciar la caché"],0,"Por eso más índices significan escrituras más lentas.",1],
+["M","Un índice con 18 % de fragmentación. Según el criterio de la guía, corresponde:",["REORGANIZE","REBUILD","DROP INDEX","Convertirlo en clustered"],0,"Menos de 30 %: REORGANIZE; más de 30 %: REBUILD.",1],
+["M","<code>UPDATE STATISTICS</code> sirve para:",["Reorganizar las páginas","Eliminar índices duplicados","Crear una PRIMARY KEY","Actualizar la distribución de valores que usa el optimizador para estimar"],3,"Estadísticas viejas llevan a estimaciones y planes malos.",1],
+["X","¿Qué privilegio da control total sobre toda la instancia?",["CONTROL DATABASE","ALTER ANY USER","CONTROL SERVER","VIEW ANY DATABASE"],2,"CONTROL SERVER equivale en la práctica a sysadmin.",1],
+["X","El rol fijo <code>db_denydatawriter</code>:",["Permite escribir pero no leer","Niega a sus miembros toda escritura (INSERT, UPDATE, DELETE)","Elimina la base","Permite hacer respaldos"],1,"Es un DENY empaquetado: ninguna otra pertenencia les devuelve la escritura.",1],
+["P","Tabla Productos (800 000 filas). <code>WHERE categoria_id = 15</code> muestra:<pre>Clustered Index Scan\nFilas leídas: 800 000 | devueltas: 1 200\nLecturas lógicas: 6 400</pre>¿Cuál es el diagnóstico más sólido?",["Es óptimo: el índice clustered siempre es lo mejor","Falta un índice con categoria_id como clave","Hay que reconstruir el clustered","Basta con aumentar la memoria"],1,"Se lee toda la tabla para devolver el 0.15 %: no existe un camino dirigido hacia categoria_id.",0],
+["S","Usuarios (5 M filas). Hay un índice no cubriente en <code>pais</code> (200 valores). <code>WHERE pais = 'SV'</code> devuelve 20 000 filas (0.4 %). Lo más probable:",["Seek más Key Lookups: 0.4 % está por debajo del punto de quiebre","Scan, porque el índice nunca se usa","Error de ejecución","SQL Server crea un clustered nuevo"],0,"Con pocas filas respecto a la tabla, los lookups cuestan menos que leerla toda.",0],
+["C","Consulta: <code>WHERE estado = 'A' AND ciudad_id = 7 AND fecha &gt; @d</code>. <code>ciudad_id</code> es mucho más selectiva que <code>estado</code>. Orden de claves recomendado:",["(fecha, ciudad_id, estado)","(estado, fecha, ciudad_id)","Solo (fecha)","(ciudad_id, estado, fecha)"],3,"Igualdades primero (la más selectiva antes) y el rango al final.",0],
+["I","Plan de una consulta que devuelve 12 filas:<pre>Index Seek (IX_Cliente) .... 5 %\nKey Lookup ............... 95 %\nEjecuciones del lookup: 12</pre>¿Qué conclusión es más sensata?",["Siempre hay que cubrir con INCLUDE","Eliminar el índice","Con solo 12 ejecuciones el lookup es casi inofensivo; hay que medir antes de sumar otro índice","Reconstruir la tabla"],2,"El % de costo es relativo: 12 viajes a la tabla base cuestan muy poco. Se decide con lecturas lógicas.",0],
+["J","Plan:<pre>Nested Loops (Inner Join)\n  Scan Pedido ........ 2 000 000 filas\n  Seek Cliente ....... ejecuciones: 2 000 000</pre>¿Cuál es el problema?",["Nunca debe usarse Nested Loops","Falta una PRIMARY KEY","Nested Loops con una entrada externa enorme repite el Seek millones de veces","No hay ningún problema"],2,"Nested Loops es ideal con pocas filas externas; aquí conviene reducir la externa con un filtro o índice, o que el optimizador use Hash/Merge.",0],
+["M","Una tabla de bitácora recibe 50 000 INSERT por minuto, casi no se consulta y tiene 9 índices nonclustered. La primera acción es:",["Crear tres índices más","Revisar el uso (usage_stats) y evaluar eliminar los no usados o redundantes","REBUILD todos los días","Convertirla en heap sin analizar"],1,"Cada índice extra encarece los INSERT sin aportar lecturas.",0],
+["P","STATISTICS IO antes de crear el índice: <code>Table 'Pedido'. logical reads 9 800</code>. Después: <code>logical reads 12</code>. En ambos casos <code>elapsed time = 0 ms</code>. Conclusión:",["Mejora demostrada: pasó de 9 800 a 12 páginas leídas","No se puede concluir nada porque el tiempo es 0 ms","Empeoró","Las lecturas lógicas no sirven para comparar"],0,"El tiempo es ruidoso en tablas pequeñas; las lecturas lógicas son una medida estable de trabajo.",0],
+["X","El rol <code>soporte</code> pertenece a <code>db_datareader</code> y no debe leer la tabla <code>Tarjetas</code>. Qué funciona:",["REVOKE SELECT ON Tarjetas FROM soporte","GRANT SELECT ON Tarjetas TO soporte","Quitar a todos de db_datareader","DENY SELECT ON dbo.Tarjetas TO soporte"],3,"El permiso viene heredado por el rol: REVOKE no lo bloquea; DENY prevalece siempre.",0],
+["X","Debe registrarse quién ejecuta SELECT sobre la tabla <code>Salarios</code>. La combinación correcta es:",["Solo un DENY","Solo el Profiler","Un rol db_datareader","Un Server Audit (destino) más una Database Audit Specification sobre SELECT en Salarios"],3,"El Server Audit define dónde se guarda; la especificación de base define qué acciones se auditan.",0],
+["X","El login <code>ana</code> existe, pero al abrir la base Ventas recibe «no puede acceder a la base de datos». Falta:",["Reiniciar SQL Server","Darle CONTROL SERVER","Crear un usuario en Ventas asociado al login","Cambiar a autenticación Windows"],2,"El login permite conectar al servidor; para entrar en una base hace falta un usuario dentro de ella.",0]
+];
+const O=[
+["P","<code>Ventas</code> es un heap. <code>SELECT</code> de 8 columnas con <code>WHERE vendedor_id = 21</code>. Plan: Index Seek (IX_Vendedor) 30 % y RID Lookup 70 % con 3 000 ejecuciones. En 3 a 5 líneas: explique por qué es un RID y no un Key Lookup, proponga la solución y diga qué mediría.","Es RID Lookup porque la tabla no tiene índice clustered: el puntero es un RID. Los 3 000 viajes a la tabla base se eliminan con <code>(vendedor_id) INCLUDE (columnas del SELECT)</code>. Mediría que desaparezca el lookup y las lecturas lógicas antes y después.",["Explica que RID Lookup aparece porque la tabla es un heap","Propone INCLUDE con las columnas del SELECT (vendedor_id como clave)","Compara lecturas lógicas o ejecuciones del lookup antes/después"]],
+["S","Un compañero crea un índice en <code>genero</code> (2 valores) y otro en <code>dni</code> (único) y afirma que «los dos mejoran igual». En 3 a 5 líneas, compare la selectividad de ambos y diga qué esperaría en el plan de cada uno.","dni es muy selectivo: devuelve una fila y produce un Seek eficiente. genero devuelve cerca de la mitad de la tabla (baja selectividad), así que pasado el punto de quiebre el optimizador preferirá un Scan. Hay que medir filas leídas y lecturas lógicas antes de afirmar que mejora.",["Distingue alta selectividad (dni) de baja (genero)","Relaciona la baja selectividad con el punto de quiebre y el Scan","Propone medir con filas leídas o lecturas lógicas"]],
+["C","Dos consultas frecuentes: Q1 <code>WHERE sucursal_id = @s AND fecha &gt;= @d</code> y Q2 <code>WHERE fecha &gt;= @d</code>. Un colega propone un único índice <code>(fecha, sucursal_id)</code>. En 3 a 5 líneas, evalúe la propuesta.","Para Q1 conviene <code>(sucursal_id, fecha)</code>: igualdad antes que rango; con fecha como líder, sucursal_id no aprovecha el orden para el Seek. Q2 solo se atiende bien con fecha como columna líder. Según frecuencia y costo se mantienen dos índices o se elige uno, y se mide el efecto en lecturas lógicas.",["Aplica igualdad antes que rango para Q1","Explica el prefijo izquierdo: Q2 necesita fecha como líder","Propone medir o decidir según frecuencia y costo de mantenimiento"]],
+["I","Existe <code>IX_Cli (cliente_id) INCLUDE (nombre, email, telefono, direccion, notas, fecha_alta, canal, region, segmento, saldo, limite)</code>, pero la consulta solo pide <code>nombre</code> y <code>email</code>. En 3 a 5 líneas, evalúe el índice y proponga una alternativa.","Incluir 11 columnas agranda el índice casi al tamaño de la tabla: más páginas por leer y más costo en INSERT/UPDATE/DELETE. Propongo <code>(cliente_id) INCLUDE (nombre, email)</code> y pedir solo esas columnas (sin SELECT *). Verificaría que no aparezca Key Lookup y compararía lecturas lógicas.",["Señala el costo de un INCLUDE excesivo (tamaño y DML)","Propone INCLUDE solo con las columnas que pide la consulta","Menciona verificar (sin Key Lookup, lecturas lógicas) o evitar SELECT *"]],
+["J","Plan de una consulta que une <code>Factura</code> y <code>Cliente</code> por <code>cliente_id</code>: Merge Join precedido de dos Sort que suman el 80 % del costo. En 3 a 5 líneas, explique por qué ocurre y cómo lo mejoraría.","Merge Join necesita las dos entradas ordenadas por la clave de unión; como no lo están, SQL Server las ordena con Sort, que es caro. Un índice en <code>Factura(cliente_id)</code> (Cliente ya está ordenado por su PK clustered) entrega el orden sin Sort. Verificaría que los Sort desaparezcan y compararía lecturas lógicas.",["Explica que el Merge Join exige entradas ordenadas","Identifica el Sort como costo y propone un índice que entregue el orden","Verifica con el plan o las lecturas lógicas después"]],
+["M","Informe de uso en <code>Pedido</code> (90 % escrituras): IX_A (estado): seeks 0, scans 0, updates 800 000. IX_B (estado, fecha): seeks 15 000. IX_C (fecha): seeks 0, scans 3, updates 800 000. En 3 a 5 líneas, decida qué hacer con cada uno.","IX_A está contenido en IX_B (prefijo izquierdo) y no se usa: se elimina. IX_C casi no se usa y encarece cada escritura: se evalúa eliminarlo si el período observado es representativo. IX_B se conserva. Mediría el DML antes/después y documentaría la decisión.",["Detecta que IX_A es redundante (prefijo de IX_B) y no usado","Evalúa IX_C por su bajo uso y su costo en escritura","Menciona confirmar que el período es representativo, medir o documentar"]],
+["M","Se creó <code>IX_Pedido_Cliente</code> para acelerar un reporte. En 3 a 5 líneas, indique qué debe documentarse del índice y cómo comprobar que realmente sirvió.","Documentar: nombre, tipo, columnas (clave e INCLUDE), fecha y motivo (qué consulta o problema resuelve). Después se vuelve a medir con el plan real, filas leídas y lecturas lógicas, y se reporta el resultado aunque no haya mejorado.",["Menciona nombre, tipo, columnas, fecha y motivo","Indica volver a medir (plan real, filas, lecturas lógicas)","Acepta reportar el resultado aunque no mejore"]],
+["P","Dos planes de <code>WHERE socio_id = 308 AND estado = 'Activo'</code> dicen «Index Seek». Plan A: índice solo en socio_id, filas leídas 104, devueltas 1. Plan B: índice (socio_id, estado), filas leídas 1, devueltas 1. En 3 a 5 líneas, explique en qué se diferencian y cuál es mejor.","Aunque ambos son Seek, en A <code>estado</code> es un Predicate: se leen 104 filas y se descartan 103. En B ambas condiciones son Seek Predicates y solo se lee lo necesario. B es mejor; lo confirmaría con las lecturas lógicas.",["Distingue Seek Predicate de Predicate","Compara filas leídas contra devueltas","Concluye que B es mejor y lo respalda con lecturas lógicas"]],
+["X","Debe auditarse quién modifica la tabla <code>Salarios</code>. En 3 a 5 líneas, diseñe la solución con SQL Audit e indique cómo consultaría los registros.","Crear un Server Audit con destino a archivo y una Database Audit Specification que audite INSERT, UPDATE y DELETE sobre Salarios, y activar ambos. Los registros se leen con <code>sys.fn_get_audit_file</code>.",["Menciona el Server Audit con su destino","Menciona la Database Audit Specification sobre Salarios","Menciona sys.fn_get_audit_file para consultar"]],
+["X","Un analista nuevo debe conectarse al servidor y leer solo la base <code>Ventas</code>. En 3 a 5 líneas, describa los pasos (login, usuario, rol) y por qué no darle <code>sa</code> ni <code>db_owner</code>.","Crear el login (con política de contraseña), crear el usuario en Ventas asociado a ese login y agregarlo a <code>db_datareader</code>. No se usa sa ni db_owner porque el mínimo privilegio exige solo lo necesario: esos dan control total.",["Distingue login (servidor) de usuario (base)","Asigna un rol de solo lectura como db_datareader","Justifica el mínimo privilegio frente a sa/db_owner"]]
+];
+const RP=[[["Heap","material/conceptos-planes-indices.html#heap"],["Key Lookup (y RID Lookup)","material/conceptos-planes-indices.html#key-lookup-y-rid-lookup"],["Índice cubriente e INCLUDE","material/conceptos-planes-indices.html#indice-cubriente-e-include"]],[["Selectividad","material/conceptos-planes-indices.html#selectividad"],["Punto de quiebre (tipping point)","material/conceptos-planes-indices.html#punto-de-quiebre-tipping-point"],["Filas leídas vs devueltas","material/conceptos-planes-indices.html#filas-leidas-vs-devueltas"]],[["Orden de columnas en la clave","material/conceptos-planes-indices.html#orden-de-columnas-en-la-clave"],["Columna líder y prefijo izquierdo","material/conceptos-planes-indices.html#columna-lider-y-prefijo-izquierdo"],["Costo de mantener índices","material/conceptos-planes-indices.html#costo-de-mantener-indices"]],[["Índice cubriente e INCLUDE","material/conceptos-planes-indices.html#indice-cubriente-e-include"],["Columna clave vs INCLUDE","material/conceptos-planes-indices.html#columna-clave-vs-include"],["Estadísticas y SELECT *","material/conceptos-planes-indices.html#estadisticas-y-select"]],[["Merge Join","material/conceptos-planes-indices.html#merge-join"],["Join lógico vs algoritmo físico","material/conceptos-planes-indices.html#join-logico-vs-algoritmo-fisico"],["Índices que ya existen: PK, UNIQUE y FK","material/conceptos-planes-indices.html#indices-que-ya-existen-pk-unique-y-fk"]],[["Índices redundantes y no usados","material/conceptos-planes-indices.html#indices-redundantes-y-no-usados"],["Costo de mantener índices","material/conceptos-planes-indices.html#costo-de-mantener-indices"],["Documentar y verificar cada índice","material/conceptos-planes-indices.html#documentar-y-verificar-cada-indice"]],[["Documentar y verificar cada índice","material/conceptos-planes-indices.html#documentar-y-verificar-cada-indice"],["Lecturas lógicas (STATISTICS IO)","material/conceptos-planes-indices.html#lecturas-logicas-statistics-io"],["Gestión · Monitoreo","material/bd-completo.html#tema=Gesti%C3%B3n&r=Monitoreo"]],[["Seek Predicate vs Predicate","material/conceptos-planes-indices.html#seek-predicate-vs-predicate"],["Filas leídas vs devueltas","material/conceptos-planes-indices.html#filas-leidas-vs-devueltas"],["Índice compuesto","material/conceptos-planes-indices.html#indice-compuesto"]],[["Políticas · SQL Audit","material/bd-completo.html#tema=Pol%C3%ADticas&r=SQL%20Audit"],["Políticas · Database Audit Specification","material/bd-completo.html#tema=Pol%C3%ADticas&r=Database%20Audit%20Specification"],["Políticas · sys.fn_get_audit_file","material/bd-completo.html#tema=Pol%C3%ADticas&r=sys.fn_get_audit_file"]],[["Usuarios · Login","material/bd-completo.html#tema=Usuarios&r=Login"],["Roles · db_datareader","material/bd-completo.html#tema=Roles&r=db_datareader"],["Usuarios · Buenas prácticas","material/bd-completo.html#tema=Usuarios&r=Buenas%20pr%C3%A1cticas"]]];
+O.forEach((x,i)=>x[4]=RP[i]);
+const MIN=200;
+const esc=x=>x.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+const rl=a=>a.map(x=>'<a href="'+x[1]+'" target="_blank" rel="noopener">'+x[0]+"</a>").join(" · ");
+const Q=[];let m=0,o=0;for(let i=0;i<40;i++)Q.push(i%4==3?{t:"o",d:O[o++]}:{t:"m",d:M[m++]});
+const S=Q.map(()=>({a:null,ok:false,v:false,x:""}));let cur=0;
+const V=document.getElementById("v"),CH=document.getElementById("chips"),g=id=>document.getElementById(id);
+const len=i=>S[i].x.trim().length;
+const done=i=>Q[i].t=="m"?S[i].v:len(i)>=MIN;
+const first=()=>{let f=0;while(f<39&&done(f))f++;return f};
+const allowed=n=>n>=0&&n<=39&&n<=first();
+const go=n=>{if(allowed(n)){cur=n;draw()}};
+const sc=i=>{const s=S[i];if(Q[i].t!="m"||!s.v)return null;return s.ok?1:0};
+function chips(){CH.innerHTML="";const f=first();Q.forEach((q,i)=>{const b=document.createElement("button"),p=sc(i);b.textContent=i+1;
+b.className=(p===1?"ok ":p===0?"mal ":"")+(q.t=="o"&&len(i)>=MIN?"esc ":"")+(i==cur?"cur ":"")+(i>f?"lock":"");
+if(i>f){b.disabled=true;b.title="Primero responde la pregunta "+(f+1)}b.onclick=()=>go(i);CH.appendChild(b)})}
+function nav(){const q=Q[cur],ok=cur<39&&allowed(cur+1);
+if(g("nx"))g("nx").disabled=!ok;if(g("rv"))g("rv").disabled=len(cur)<MIN;
+const c=g("cc");if(c){const n=len(cur);c.textContent=n+" / "+MIN+" caracteres"+(n>=MIN?" ✓":"");c.style.color=n>=MIN?"var(--ok)":"var(--mut)"}
+const l=g("lk");if(l)l.textContent=(cur<39&&!ok)?(q.t=="m"?"Responde esta pregunta para pasar a la siguiente.":"Escribe al menos "+MIN+" caracteres para pasar a la siguiente (llevas "+len(cur)+")."):"";
+chips()}
+function draw(){guardar();chips();const q=Q[cur],s=S[cur],d=q.d,tp=d[0];let h='<div class="card"><span class="tag">Pregunta '+(cur+1)+" de 40 · "+T[tp]+" · "+(q.t=="m"?(d[5]?"Teoría · selección múltiple":"Caso · selección múltiple"):"Caso escrito")+'</span><div class="q">'+d[1]+"</div>";
+if(q.t=="m"){d[2].forEach((t,i)=>{let c="opt";if(s.v){if(i==d[3])c+=" ok";else if(i==s.a)c+=" mal"}else if(i==s.a)c+=" sel";h+='<button class="'+c+'" data-i="'+i+'">'+"abcd"[i]+". "+t+"</button>"});
+h+=s.v?'<div class="fb '+(s.ok?"ok":"mal")+'"><b>'+(s.ok?"Correcto.":"Incorrecto.")+"</b> "+d[4]+"</div>":'<div class="row"><button class="btn" id="rs"'+(s.a===null?" disabled":"")+">Responder</button></div>"}
+else{h+='<textarea id="ta" placeholder="Escribe tu análisis con tus palabras (mínimo '+MIN+' caracteres, unas 3 líneas)…">'+esc(s.x)+"</textarea>";
+h+='<div class="meta"><span id="cc"></span><span class="help" id="hp" tabindex="0">¿No tienes la respuesta?<span class="pop"><b>Mejor consulta el material</b> en los siguientes enlaces y luego escribe la respuesta con tus palabras:<br>'+rl(d[4])+"</span></span></div>";
+if(s.v)h+='<div class="fb"><b>Respuesta modelo:</b><br>'+d[2]+"</div>";
+else h+='<div class="row"><button class="btn" id="rv"'+(len(cur)<MIN?" disabled":"")+'>Ver respuesta modelo</button></div>'}
+h+='<div class="row"><button class="btn sec" id="pv"'+(cur==0?" disabled":"")+'>Anterior</button><button class="btn sec" id="nx">Siguiente</button><button class="btn sec" id="fin">Ver diagnóstico</button></div><p class="sub" id="lk"></p></div>';
+V.innerHTML=h;
+V.querySelectorAll(".opt").forEach(b=>b.onclick=()=>{if(!s.v){s.a=+b.dataset.i;draw()}});
+if(g("rs"))g("rs").onclick=()=>{s.v=true;s.ok=s.a==d[3];draw()};
+if(g("ta"))g("ta").oninput=e=>{s.x=e.target.value;guardar();nav()};if(g("rv"))g("rv").onclick=()=>{s.v=true;draw()};
+if(g("hp"))g("hp").onclick=()=>g("hp").classList.toggle("open");
+g("pv").onclick=()=>go(cur-1);g("nx").onclick=()=>go(cur+1);g("fin").onclick=res;nav()}
+function res(){const A={};let ws=0;Q.forEach((q,i)=>{if(q.t=="o"){if(len(i)>=MIN)ws++;return}const p=sc(i);if(p===null)return;const t=q.d[0];A[t]=A[t]||[0,0];A[t][0]+=p;A[t][1]++});
+let h='<div class="card"><span class="tag">Diagnóstico de puntos débiles</span>',n=0,tot=0,weak=[];
+Object.keys(T).forEach(k=>{const a=A[k];if(!a){h+='<div class="t"><b>'+T[k]+'</b><small>Sin responder (selección múltiple)</small></div>';return}const p=a[0]/a[1];n+=a[0];tot+=a[1];const c=p>=.7?"var(--ok)":p>=.4?"var(--amb)":"var(--mal)";if(p<.7)weak.push(k);
+h+='<div class="t"><b>'+T[k]+" · "+Math.round(p*100)+" %</b><small>"+a[1]+" preguntas respondidas</small><div class=\"bar\"><div style=\"width:"+Math.round(p*100)+"%;background:"+c+'"></div></div></div>'});
+h+='<p class="q">Selección múltiple: '+(tot?n+" correctas de "+tot+" respondidas":"aún no respondes ninguna")+"</p>";
+if(weak.length){h+="<b>Qué repasar:</b>";weak.forEach(k=>{h+='<div class="fb mal"><b>'+T[k]+".</b> "+R[k]+"</div>"})}else if(tot)h+='<div class="fb ok">Sin puntos débiles claros en lo respondido. Responde las preguntas que faltan.</div>';
+h+='<p class="q">Respuestas escritas: '+ws+" de 10 completadas</p><div class=\"fb\">Las escritas no se califican solas: descarga el .json (botón al final de la página) o cópialo y envíalo para que te las corrijan.</div>";
+h+='<p class="sub">Toca los números de arriba para revisar tus fallos: rojo = incorrecto, verde = correcto, borde azul = escrita completada.</p><div class="row"><button class="btn sec" id="bk">Volver a las preguntas</button><button class="btn" id="rst">Reiniciar</button></div></div>';V.innerHTML=h;
+g("bk").onclick=draw;
+g("rst").onclick=()=>{if(!confirm("¿Borrar todas tus respuestas?"))return;S.forEach(s=>{s.a=null;s.ok=false;s.v=false;s.x=""});cur=0;draw()}}
+const tx=h=>{const d=document.createElement("div");d.innerHTML=h;return d.textContent};
+function datos(){return{instruccion:"Corrige estas respuestas: para cada una di si darías el punto (usa los criterios), qué le faltó y cómo mejorarla.",fecha:new Date().toISOString(),respuestas:Q.map((q,i)=>({q,i})).filter(x=>x.q.t=="o").map(x=>({numero:x.i+1,tema:T[x.q.d[0]],enunciado:tx(x.q.d[1]),criterios:x.q.d[3],mi_respuesta:S[x.i].x.trim()||"(sin responder)",caracteres:S[x.i].x.trim().length}))}}
+g("bj").onclick=()=>{const b=new Blob([JSON.stringify(datos(),null,2)],{type:"application/json"}),a=document.createElement("a");a.href=URL.createObjectURL(b);a.download="respuestas-escritas-v2.json";a.click();URL.revokeObjectURL(a.href);g("cm").textContent="Descargado: respuestas-escritas-v2.json"};
+g("bc").onclick=()=>{const t=JSON.stringify(datos(),null,2),m=g("cm");(navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>{m.textContent="Copiado. Pégalo en el chat."}).catch(()=>{const a=g("cp");a.hidden=false;a.value=t;a.select();m.textContent="Copia el texto de abajo (Ctrl + C) y pégalo en el chat."})};
+document.addEventListener("keydown",e=>{
+const el=document.activeElement,typing=el&&(el.tagName=="TEXTAREA"||el.tagName=="INPUT"),q=Q[cur],s=S[cur];
+if(typing){if(e.key=="Escape"){el.blur();e.preventDefault()}
+else if(e.ctrlKey&&e.key=="Enter"&&g("rv")){g("rv").click();e.preventDefault()}
+else if(e.altKey&&e.key=="ArrowRight"){go(cur+1);e.preventDefault()}
+else if(e.altKey&&e.key=="ArrowLeft"){go(cur-1);e.preventDefault()}
+return}
+if(e.ctrlKey||e.altKey||e.metaKey)return;
+const k=e.key.toLowerCase();
+if(k=="arrowright"){go(cur+1);e.preventDefault()}
+else if(k=="arrowleft"){go(cur-1);e.preventDefault()}
+else if(q.t=="m"&&!s.v&&/^[a-d1-4]$/.test(k)){s.a="abcd1234".indexOf(k)%4;draw();e.preventDefault()}
+else if(k=="enter"&&!(el&&el.tagName=="BUTTON")){
+if(g("rs")&&!g("rs").disabled)g("rs").click();
+else if(q.t=="m"&&s.v)go(cur+1);
+else if(q.t=="o"&&!s.v&&g("ta"))g("ta").focus();
+e.preventDefault()}
+});
+const K="preparcial-casos-v2";
+function guardar(){const m=g("gd");try{localStorage.setItem(K,JSON.stringify({S,cur}));m.textContent="✓ Respuestas guardadas automáticamente en este navegador ("+new Date().toLocaleTimeString()+")"}catch(e){m.textContent="⚠ No se puede guardar aquí: usa «Descargar» o «Copiar» para no perder tus respuestas."}}
+try{const r=JSON.parse(localStorage.getItem(K)||"null");if(r&&r.S&&r.S.length==S.length){r.S.forEach((x,i)=>Object.assign(S[i],x));cur=Math.min(r.cur||0,first())}}catch(e){}
+draw();
+</script>
+</body>
+</html>
